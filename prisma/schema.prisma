@@ -1,0 +1,108 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  id       Int        @id @default(autoincrement())
+  username String
+  password String     @unique
+  fname    String
+  lname    String
+  email     String?
+  address  String
+  phone    String
+  Order    Order[]
+  Cart     Cart[]
+  Shipping Shipping[]
+  Login    Login[]
+
+  @@map("customer")
+}
+
+model Login {
+  id         Int      @id @default(autoincrement())
+  usename    String
+  password   String
+  customer   Customer @relation(fields: [customerId], references: [id])
+  customerId Int
+
+  @@map("login")
+}
+
+model Order {
+  id          Int      @id @default(autoincrement())
+  date        DateTime
+  totalamount Int
+  customer    Customer @relation(fields: [customerId], references: [id])
+  customerId  Int
+  paymentId   Int?     @map("payment_id")
+  shippingId  Int?     @map("shpping_id")
+
+  @@map("order")
+}
+
+model Cart {
+  id         Int       @id @default(autoincrement())
+  quantity   String
+  customer   Customer  @relation(fields: [customerId], references: [id])
+  customerId Int
+  product    Product[]
+
+  @@map("cart")
+}
+
+model Product {
+  id            Int        @id @default(autoincrement())
+  name          String
+  description   String
+  price         Int
+  stockquantity Int
+  cart          Cart[]
+  Category      Category[]
+
+  @@map("product")
+}
+
+model Category {
+  id           Int     @id @default(autoincrement())
+  categoryname String
+  product      Product @relation(fields: [productId], references: [id])
+  productId    Int
+}
+
+model Payment {
+  id          Int      @id @default(autoincrement())
+  amount      Int
+  paymentdate DateTime
+  paymenthod  String
+  orderId     Int?     @map("order_id")
+
+  @@map("payment")
+}
+
+enum Status {
+  pending
+  done
+
+  @@map("status")
+}
+
+model Shipping {
+  id              Int      @id @default(autoincrement())
+  shippingdate    DateTime
+  shippingaddress String
+  status          Status
+  customer        Customer @relation(fields: [customerId], references: [id])
+  customerId      Int
+  orderId         Int?     @map("order_id")
+
+  @@map("shipping")
+}
